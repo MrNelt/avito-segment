@@ -9,7 +9,7 @@ RUN go mod download && go mod verify
 COPY . .
 RUN mkdir -p /usr/local/bin/
 RUN go mod tidy
-RUN go build -o /usr/local/bin/app ./cmd/server
+RUN go build -o /usr/local/bin/app ./cmd/app
 
 EXPOSE 8080
 

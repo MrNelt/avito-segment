@@ -5,11 +5,8 @@ services:
     image: postgres
     container_name: postgres
     restart: on-failure
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_HOST: ${DATABASE_HOST}
+    env_file:
+      - .env
     volumes:
       - data-db:/var/lib/postgresql/data
     ports:
@@ -19,6 +16,8 @@ services:
     restart: on-failure
     build: ./
     container_name: api
+    env_file:
+      - .env
     depends_on:
       - postgres
     ports:
