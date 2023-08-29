@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Segment struct {
 	gorm.Model
-
-	ID   string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	Name string
+	SegmentID uint `gorm:"primarykey"`
+	Name      string
 }

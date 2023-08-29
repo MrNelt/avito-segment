@@ -3,6 +3,9 @@ package postgres
 import (
 	"fmt"
 	"segment/pkg/models"
+	pgSegment "segment/pkg/storage/postgres/segment"
+
+	"segment/pkg/storage/segment"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -50,4 +53,8 @@ func (s *Storage) MakeMigrations() error {
 		return err
 	}
 	return nil
+}
+
+func (s *Storage) GetSegmentStorage() segment.IStorage {
+	return pgSegment.NewStorage(s.db)
 }

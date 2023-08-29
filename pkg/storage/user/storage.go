@@ -3,5 +3,6 @@ package user
 import "segment/pkg/models"
 
 type IStorage interface {
-	GetUserSegmentsByUserID(ID string) []models.Segment
+	CreateUser(ID string) error
+	GetUserSegmentsByUserID(ID string) ([]models.Segment, error)
 }

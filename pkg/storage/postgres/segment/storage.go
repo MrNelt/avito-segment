@@ -1,6 +1,8 @@
 package segment
 
 import (
+	"errors"
+	errorType "segment/pkg/errors"
 	"segment/pkg/models"
 
 	"gorm.io/gorm"
@@ -25,15 +27,23 @@ func (s *Storage) CreateSegment(name string) error {
 func (s *Storage) GetSegmentByName(name string) (models.Segment, error) {
 	db := s.db
 	var segment models.Segment
-	if err := db.Where("name = ?", name).First(&segment).Error; err != nil {
-		return models.Segment{}, nil
+	err := db.Where("name = ?", name).First(&segment).Error
+	switch {
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		return models.Segment{}, errorType.ErrSegmentNotFound
+	case err != nil:
+		return models.Segment{}, err
 	}
 	return segment, nil
 }
 
 func (s *Storage) DeleteSegmentByName(name string) error {
 	db := s.db
-	if err := db.Where("name = ?", name).Delete(&models.Segment{}).Error; err != nil {
+	err := db.Where("name = ?", name).Delete(&models.Segment{}).Error
+	switch {
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		return errorType.ErrSegmentNotFound
+	case err != nil:
 		return err
 	}
 	return nil
