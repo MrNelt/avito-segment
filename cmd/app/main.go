@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"segment/pkg/config"
+	"segment/pkg/delivery/router"
+	"segment/pkg/repo"
 	"segment/pkg/storage"
 	"segment/pkg/storage/postgres"
 
@@ -13,17 +16,10 @@ import (
 )
 
 func InitializeStorage(cfg *config.Config) (storage.IStorage, error) {
-
 	db := postgres.NewStorage(cfg.Database)
 	if err := db.Connect(); err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-
-	db.Init().Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
-	if db.Init().Error != nil {
-		return nil, fmt.Errorf("failed to create extension: %w", db.Init().Error)
-	}
-
 	return db, nil
 }
 
@@ -46,5 +42,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to make migrations: %v", err)
 	}
-
+	repo := repo.NewRepository(db)
+	server := router.SetupRouter(repo)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), server)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Close(); err != nil {
+		log.Fatalf("failed to close connection to database: %v", err)
+	}
 }

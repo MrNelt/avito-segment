@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"segment/pkg/models"
 	pgSegment "segment/pkg/storage/postgres/segment"
+	pgUser "segment/pkg/storage/postgres/user"
+	"segment/pkg/storage/user"
 
 	"segment/pkg/storage/segment"
 
@@ -57,4 +59,8 @@ func (s *Storage) MakeMigrations() error {
 
 func (s *Storage) GetSegmentStorage() segment.IStorage {
 	return pgSegment.NewStorage(s.db)
+}
+
+func (s *Storage) GetUserStorage() user.IStorage {
+	return pgUser.NewStorage(s.db)
 }

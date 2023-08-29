@@ -40,10 +40,7 @@ func (s *Storage) GetSegmentByName(name string) (models.Segment, error) {
 func (s *Storage) DeleteSegmentByName(name string) error {
 	db := s.db
 	err := db.Where("name = ?", name).Delete(&models.Segment{}).Error
-	switch {
-	case errors.Is(err, gorm.ErrRecordNotFound):
-		return errorType.ErrSegmentNotFound
-	case err != nil:
+	if err != nil {
 		return err
 	}
 	return nil
