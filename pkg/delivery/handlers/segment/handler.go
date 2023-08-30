@@ -33,7 +33,7 @@ func (h *Handler) CreateSegmentByName(ctx *gin.Context) {
 		return
 	case err != nil:
 		log.Println(err.Error())
-		errorType.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
+		errorType.HandleError(ctx, http.StatusInternalServerError, errorType.ErrCreateSegment.Error(), err)
 		return
 	}
 	ctx.Status(http.StatusOK)
@@ -44,7 +44,7 @@ func (h *Handler) DeleteSegmentByName(ctx *gin.Context) {
 	err := h.repo.DeleteSegmentByName(name)
 	if err != nil {
 		log.Println(err.Error())
-		errorType.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
+		errorType.HandleError(ctx, http.StatusInternalServerError, errorType.ErrDeleteSegment.Error(), err)
 		return
 	}
 	ctx.Status(http.StatusOK)

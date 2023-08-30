@@ -45,9 +45,11 @@ func (h *Handler) DeleteAddSegmentsToUser(ctx *gin.Context) {
 	err = h.repo.DeleteAddSegmentsToUser(req.Delete, req.Add, ID)
 	switch {
 	case errors.Is(err, errorType.ErrSegmentNotFound):
+		log.Println(err.Error())
 		errorType.HandleError(ctx, http.StatusBadRequest, err.Error(), err)
 		return
 	case err != nil:
+		log.Println(err.Error())
 		errorType.HandleError(ctx, http.StatusInternalServerError, errorType.ErrDeleteAddSegmentsToUser.Error(), err)
 		return
 	}
