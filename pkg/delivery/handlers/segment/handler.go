@@ -1,8 +1,10 @@
 package segment
 
 import (
+	"errors"
+	"log"
 	"net/http"
-	"segment/pkg/errors"
+	errorType "segment/pkg/errors"
 	"segment/pkg/repo/segment"
 
 	"github.com/gin-gonic/gin"
@@ -24,23 +26,26 @@ func NewHandler(repo segment.IRepository) *Handler {
 func (h *Handler) CreateSegmentByName(ctx *gin.Context) {
 	name := ctx.Param("name")
 	err := h.repo.CreateSegmentByName(name)
-	if err != nil {
-		errors.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
+	switch {
+	case errors.Is(err, errorType.ErrSegmentAlreadyExists):
+		log.Println(err.Error())
+		errorType.HandleError(ctx, http.StatusBadRequest, err.Error(), err)
+		return
+	case err != nil:
+		log.Println(err.Error())
+		errorType.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"name": name,
-	})
+	ctx.Status(http.StatusOK)
 }
 
 func (h *Handler) DeleteSegmentByName(ctx *gin.Context) {
 	name := ctx.Param("name")
 	err := h.repo.DeleteSegmentByName(name)
 	if err != nil {
-		errors.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
+		log.Println(err.Error())
+		errorType.HandleError(ctx, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"name": name,
-	})
+	ctx.Status(http.StatusOK)
 }

@@ -7,16 +7,20 @@ import (
 )
 
 var (
-	ErrSegmentNotFound = fmt.Errorf("segment doesn't exist")
-	ErrUserNotFound    = fmt.Errorf("user doesn't exist")
+	ErrSegmentAlreadyExists    = fmt.Errorf("ErrSegmentAlreadyExists")
+	ErrGetUserSegmentsByUserID = fmt.Errorf("ErrGetUserSegmentsByUserID")
+	ErrDeleteAddSegmentsToUser = fmt.Errorf("ErrDeleteAddSegmentsToUser")
+	ErrParseDeleteAddSegments  = fmt.Errorf("ErrParseDeleteAddSegments")
+	ErrParseIDtoINT            = fmt.Errorf("ErrParseIDtoINT")
+	ErrSegmentNotFound         = fmt.Errorf("ErrSegmentNotFound")
+	ErrUserNotFound            = fmt.Errorf("ErrUserNotFound")
+	ErrCreateSegment           = fmt.Errorf("ErrCreateSegment")
+	ErrDeleteSegment           = fmt.Errorf("ErrDeleteSegment")
 )
 
 func HandleError(ctx *gin.Context, status int, errMsg string, err error) {
 	response := gin.H{
 		"error": errMsg,
-	}
-	if err != nil {
-		response["message"] = err.Error()
 	}
 	ctx.JSON(status, response)
 }

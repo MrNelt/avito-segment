@@ -4,6 +4,8 @@ import "gorm.io/gorm"
 
 type Segment struct {
 	gorm.Model
-	SegmentID uint `gorm:"primarykey"`
-	Name      string
+
+	ID    int `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
+	Name  string
+	Users []User `gorm:"many2many:segment_users"`
 }

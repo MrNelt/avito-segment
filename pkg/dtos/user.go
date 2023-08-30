@@ -1,10 +1,6 @@
 package dtos
 
-type UserResponseDTO struct {
-	ID       uint     `json:"ID"`
+type UserDTO struct {
+	ID       int      `json:"ID"`
 	Segments []string `json:"segments"`
-}
-
-type UserRequestDTO struct {
-	ID uint `json:"ID"`
 }

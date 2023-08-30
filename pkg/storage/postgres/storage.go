@@ -51,7 +51,7 @@ func (s *Storage) Init() *gorm.DB {
 }
 
 func (s *Storage) MakeMigrations() error {
-	if err := s.db.AutoMigrate(&models.User{}, &models.Segment{}); err != nil {
+	if err := s.db.AutoMigrate(&models.Segment{}, &models.User{}); err != nil {
 		return err
 	}
 	return nil

@@ -18,6 +18,14 @@ func NewStorage(db *gorm.DB) *Storage {
 
 func (s *Storage) CreateSegment(name string) error {
 	db := s.db
+	_, err := s.GetSegmentByName(name)
+
+	if err != nil && !errors.Is(err, errorType.ErrSegmentNotFound) {
+		return err
+	} else if err == nil {
+		return errorType.ErrSegmentAlreadyExists
+	}
+
 	if err := db.Create(&models.Segment{Name: name}).Error; err != nil {
 		return err
 	}
