@@ -48,7 +48,9 @@ curl --location --request POST 'localhost:8080/segment/TEST4'
 curl --location 'localhost:8080/user/1' \
 --header 'Content-Type: application/json' \
 --data '{
-    "add": ["TEST1", "TEST2"]
+    "add": ["TEST1", "TEST2"],
+    "TTL": 2,
+	"TTLUnit": "DAYS"
 }'
 ```
 
@@ -56,7 +58,9 @@ curl --location 'localhost:8080/user/1' \
 curl --location 'localhost:8080/user/2' \
 --header 'Content-Type: application/json' \
 --data '{
-    "add": ["TEST1", "TEST2", "TEST3", "TEST4"]
+    "add": ["TEST1", "TEST2", "TEST3", "TEST4"],
+    "TTL": 2,
+	"TTLUnit": "DAYS"
 }'
 ```
 
@@ -94,7 +98,9 @@ curl --location 'localhost:8080/user/1' \
 --header 'Content-Type: application/json' \
 --data '{
     "add": ["TEST3", "TEST4"],
-    "delete": ["TEST1", "TEST2"]
+    "delete": ["TEST1", "TEST2"],
+    "TTL": 2,
+	"TTLUnit": "DAYS"
 }'
 ```
 
@@ -140,3 +146,19 @@ curl --location 'localhost:8080/user/1' \
     "error": "ErrSegmentNotFound"
 }
 ```
+
+Остальные серверные ошибки также обработаны
+
+## TTL
+
+из дополнительных заданий реализован TTL у юзера в сегменте
+необходимо передавать в запросе ```TTL``` и ```TTLUnit```
+
+Пример:
+
+```
+"TTL": 2,
+"TTLUnit": "DAYS"
+```
+
+```TTLUnit in ["DAYS", "HOURS", "MINUTES", "SECONDS"]```

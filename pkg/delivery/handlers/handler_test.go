@@ -18,6 +18,7 @@ import (
 	"segment/pkg/storage/postgres"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/heetch/confita"
 	"github.com/heetch/confita/backend/env"
@@ -135,7 +136,9 @@ func (s *TestSuiteHandler) Test_CreateSegmentToUserOK() {
 	s.Require().Equal(http.StatusOK, resp.StatusCode)
 	data := []byte(`
 	{
-		"add":["TEST"]
+		"add":["TEST"],
+		"TTL": 2,
+		"TTLUnit": "DAYS"
 	}
 	`)
 	r := bytes.NewReader(data)
@@ -152,7 +155,9 @@ func (s *TestSuiteHandler) Test_CreateSegmentToUserOK() {
 func (s *TestSuiteHandler) Test_CreateSegmentToUserFail() {
 	data := []byte(`
 	{
-		"add":["TEST"]
+		"add":["TEST"],
+		"TTL": 2,
+		"TTLUnit": "DAYS"
 	}
 	`)
 	r := bytes.NewReader(data)
@@ -164,7 +169,9 @@ func (s *TestSuiteHandler) Test_CreateSegmentToUserFail() {
 func (s *TestSuiteHandler) Test_CreateSegmentsUserFail() {
 	data := []byte(`
 	{
-		"add":["TEST"]
+		"add":["TEST"],
+		"TTL": 2,
+		"TTLUnit": "DAYS"
 	}
 	`)
 	r := bytes.NewReader(data)
@@ -188,7 +195,9 @@ func (s *TestSuiteHandler) Test_GetUserSegments() {
 	s.Require().Equal(http.StatusOK, resp.StatusCode)
 	data := []byte(`
 	{
-		"add":["TEST1", "TEST2", "TEST3"]
+		"add":["TEST1", "TEST2", "TEST3"],
+		"TTL": 2,
+		"TTLUnit": "DAYS"
 	}
 	`)
 	r := bytes.NewReader(data)
@@ -213,7 +222,9 @@ func (s *TestSuiteHandler) Test_GetUserSegments() {
 	data = []byte(`
 	{
 		"add":["TEST4"],
-		"delete":["TEST1", "TEST2"]
+		"delete":["TEST1", "TEST2"],
+		"TTL": 2,
+		"TTLUnit": "DAYS"
 	}
 	`)
 	r = bytes.NewReader(data)
@@ -232,6 +243,49 @@ func (s *TestSuiteHandler) Test_GetUserSegments() {
 	sort.Slice(UserDTO.Segments, func(i, j int) bool {
 		return UserDTO.Segments[i] < UserDTO.Segments[j]
 	})
+	for i := 0; i < len(UserDTO.Segments); i++ {
+		s.Require().Equal(expect[i], UserDTO.Segments[i])
+	}
+}
+
+func (s *TestSuiteHandler) Test_TTLUserSegments() {
+	resp, err := http.Post(fmt.Sprintf("%s/segment/TEST1", s.server.URL), "", nil)
+	s.Require().NoError(err)
+	s.Require().Equal(http.StatusOK, resp.StatusCode)
+	resp, err = http.Post(fmt.Sprintf("%s/segment/TEST2", s.server.URL), "", nil)
+	s.Require().NoError(err)
+	s.Require().Equal(http.StatusOK, resp.StatusCode)
+	data := []byte(`
+	{
+		"add":["TEST1"],
+		"TTL": 1,
+		"TTLUnit": "SECONDS"
+	}
+	`)
+	r := bytes.NewReader(data)
+	resp, err = http.Post(fmt.Sprintf("%s/user/1", s.server.URL), "application/json", r)
+	s.Require().NoError(err)
+	s.Require().Equal(http.StatusOK, resp.StatusCode)
+	data = []byte(`
+	{
+		"add":["TEST2"],
+		"TTL": 1,
+		"TTLUnit": "DAYS"
+	}
+	`)
+	r = bytes.NewReader(data)
+	resp, err = http.Post(fmt.Sprintf("%s/user/1", s.server.URL), "application/json", r)
+	s.Require().NoError(err)
+	s.Require().Equal(http.StatusOK, resp.StatusCode)
+	time.Sleep(1 * time.Second)
+	resp, err = http.Get(fmt.Sprintf("%s/user/1", s.server.URL))
+	s.Require().Equal(http.StatusOK, resp.StatusCode)
+	s.Require().NoError(err)
+	var UserDTO dtos.UserDTO
+	body, err := io.ReadAll(resp.Body)
+	s.Require().NoError(err)
+	json.Unmarshal(body, &UserDTO)
+	expect := []string{"TEST2"}
 	for i := 0; i < len(UserDTO.Segments); i++ {
 		s.Require().Equal(expect[i], UserDTO.Segments[i])
 	}

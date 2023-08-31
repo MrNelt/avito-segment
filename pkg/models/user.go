@@ -1,10 +1,15 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
 
-	UserID   int       `gorm:"primary_key"`
-	Segments []Segment `gorm:"many2many:segment_users"`
+	UserID         int `gorm:"primary_key"`
+	ExpirationDate time.Time
+	Segments       []Segment `gorm:"many2many:segment_users"`
 }

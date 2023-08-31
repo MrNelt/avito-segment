@@ -4,6 +4,7 @@ import (
 	"errors"
 	errorType "segment/pkg/errors"
 	"segment/pkg/models"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -38,17 +39,17 @@ func (s *Storage) CreateUser(ID int) error {
 	return nil
 }
 
-func (s *Storage) DeleteAddSegmentsToUser(deleteSegmentsNames, addSegmentsNames []string, ID int) error {
+func (s *Storage) DeleteAddSegmentsToUser(deleteSegmentsNames, addSegmentsNames []string, ID int, expirationTime time.Time) error {
 	if err := s.deleteSegmentsToUser(deleteSegmentsNames, ID); err != nil {
 		return err
 	}
-	if err := s.addSegmentsToUser(addSegmentsNames, ID); err != nil {
+	if err := s.addSegmentsToUser(addSegmentsNames, ID, expirationTime); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Storage) addSegmentsToUser(addSegmentsNames []string, ID int) error {
+func (s *Storage) addSegmentsToUser(addSegmentsNames []string, ID int, expirationDate time.Time) error {
 	if len(addSegmentsNames) == 0 {
 		return nil
 	}
@@ -64,7 +65,7 @@ func (s *Storage) addSegmentsToUser(addSegmentsNames []string, ID int) error {
 	case req.Error != nil:
 		return req.Error
 	}
-	user := models.User{UserID: ID}
+	user := models.User{UserID: ID, ExpirationDate: expirationDate}
 	for i := range addSegments {
 		if err := db.Model(&addSegments[i]).Association("Users").Append(&user); err != nil {
 			return err
@@ -108,7 +109,15 @@ func (s *Storage) GetUserSegmentsByUserID(ID int) ([]models.Segment, error) {
 	}
 	var segments []models.Segment
 	for _, user := range users {
-		segments = append(segments, user.Segments...)
+		if !user.ExpirationDate.Before(time.Now()) {
+			segments = append(segments, user.Segments...)
+		} else {
+			for _, segment := range user.Segments {
+				if err := db.Model(&user).Association("Segments").Delete(&segment); err != nil {
+					return []models.Segment{}, err
+				}
+			}
+		}
 	}
 	return segments, nil
 }

@@ -25,9 +25,12 @@ func NewHandler(repo user.IRepository) *Handler {
 }
 
 func (h *Handler) DeleteAddSegmentsToUser(ctx *gin.Context) {
+
 	type Request struct {
-		Add    []string `json:"add"`
-		Delete []string `json:"delete"`
+		Add     []string `json:"add"`
+		Delete  []string `json:"delete"`
+		TTL     uint     `json:"TTL"`
+		TTLUnit string   `json:"TTLUnit"`
 	}
 	var req Request
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -35,6 +38,7 @@ func (h *Handler) DeleteAddSegmentsToUser(ctx *gin.Context) {
 		errorType.HandleError(ctx, http.StatusBadRequest, errorType.ErrParseDeleteAddSegments.Error(), err)
 		return
 	}
+
 	IDstr := ctx.Param("id")
 	ID, err := strconv.Atoi(IDstr)
 	if err != nil {
@@ -42,7 +46,7 @@ func (h *Handler) DeleteAddSegmentsToUser(ctx *gin.Context) {
 		errorType.HandleError(ctx, http.StatusBadRequest, errorType.ErrParseIDtoINT.Error(), err)
 		return
 	}
-	err = h.repo.DeleteAddSegmentsToUser(req.Delete, req.Add, ID)
+	err = h.repo.DeleteAddSegmentsToUser(req.Delete, req.Add, ID, req.TTL, req.TTLUnit)
 	switch {
 	case errors.Is(err, errorType.ErrSegmentNotFound):
 		log.Println(err.Error())
