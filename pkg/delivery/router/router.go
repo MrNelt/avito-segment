@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(repo repo.IRepository) *gin.Engine {
+func SetupRouter(repo repo.IRepository) http.Handler {
 	router := gin.Default()
 	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "pong")

@@ -54,12 +54,15 @@ func (s *Storage) addSegmentsToUser(addSegmentsNames []string, ID int) error {
 	}
 	var addSegments []models.Segment
 	db := s.db
-	err := db.Where("name in (?)", addSegmentsNames).Find(&addSegments).Error
-	switch {
-	case errors.Is(err, gorm.ErrRecordNotFound):
+	req := db.Where("name in (?)", addSegmentsNames).Find(&addSegments)
+	if req.RowsAffected != int64(len(addSegmentsNames)) {
 		return errorType.ErrSegmentNotFound
-	case err != nil:
-		return err
+	}
+	switch {
+	case errors.Is(req.Error, gorm.ErrRecordNotFound):
+		return errorType.ErrSegmentNotFound
+	case req.Error != nil:
+		return req.Error
 	}
 	user := models.User{UserID: ID}
 	for i := range addSegments {
@@ -75,21 +78,25 @@ func (s *Storage) deleteSegmentsToUser(deleteSegmentsNames []string, ID int) err
 		return nil
 	}
 	db := s.db
-	var deleteSegments []models.Segment
-	err := db.Where("name in (?)", deleteSegmentsNames).Find(&deleteSegments).Error
-	switch {
-	case errors.Is(err, gorm.ErrRecordNotFound):
-		return errorType.ErrSegmentNotFound
-	case err != nil:
+
+	deleteSegmentsNameSet := make(map[string]struct{})
+	for _, name := range deleteSegmentsNames {
+		deleteSegmentsNameSet[name] = struct{}{}
+	}
+	var users []models.User
+	if err := db.Preload("Segments").Where("user_id = ?", ID).Find(&users).Error; err != nil {
 		return err
 	}
-	user := models.User{UserID: ID}
-
-	for i := range deleteSegments {
-		if err := db.Model(&deleteSegments[i]).Association("Users").Delete(&user); err != nil {
-			return err
+	for _, user := range users {
+		for _, segment := range user.Segments {
+			if _, ok := deleteSegmentsNameSet[segment.Name]; ok {
+				if err := db.Model(&user).Association("Segments").Delete(&segment); err != nil {
+					return err
+				}
+			}
 		}
 	}
+
 	return nil
 }
 

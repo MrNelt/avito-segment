@@ -9,7 +9,10 @@ db:  ##@Database Create database with docker-compose
 	docker-compose -f docker-compose.yml up postgres -d --remove-orphans
 
 run:  ##@Application Run application server
-	docker-compose -f docker-compose.yml up api -d
+	docker-compose -f docker-compose.yml up --build api -d
+
+stop: ##@Application Stop application server
+	docker-compose -f docker-compose.yml stop
 
 down:  ##@Application Down and clean application server
 	docker-compose -f docker-compose.yml down
